@@ -9,7 +9,6 @@ services:
   - type: web
     name: worldvision-api
     env: docker
-    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /up
@@ -49,7 +48,6 @@ services:
   - type: web
     name: worldvision-frontend
     env: static
-    plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
