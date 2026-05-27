@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Warehouse, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Plus, Warehouse, CheckCircle, XCircle, AlertTriangle, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Warehouse as WarehouseType } from '../types'
@@ -8,10 +8,82 @@ import { cn } from '../lib/utils'
 
 interface District { id: number; name: string }
 
+function EditWarehouseModal({ warehouse, districts, onClose }: {
+  warehouse: WarehouseType; districts: District[]; onClose: () => void
+}) {
+  const qc = useQueryClient()
+  const [form, setForm] = useState({
+    name: warehouse.name ?? '',
+    address: (warehouse as any).address ?? '',
+    capacity_cbm: (warehouse as any).capacity_cbm ?? '',
+    district_id: String(warehouse.district_id ?? ''),
+  })
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => api.put(`/warehouses/${warehouse.id}`, {
+      name: form.name,
+      address: form.address || undefined,
+      capacity_cbm: form.capacity_cbm ? Number(form.capacity_cbm) : undefined,
+      district_id: form.district_id ? Number(form.district_id) : undefined,
+    }),
+    onSuccess: () => {
+      toast.success('Warehouse updated')
+      qc.invalidateQueries({ queryKey: ['warehouses'] })
+      onClose()
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message ?? 'Update failed'),
+  })
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="font-semibold text-gray-800">Edit Warehouse</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Name *</label>
+            <input className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.name} onChange={(e) => set('name', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">District</label>
+            <select className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              value={form.district_id} onChange={(e) => set('district_id', e.target.value)}>
+              <option value="">Select district…</option>
+              {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+            <input className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.address} onChange={(e) => set('address', e.target.value)} placeholder="Street, City" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Capacity (m³)</label>
+            <input type="number" className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.capacity_cbm} onChange={(e) => set('capacity_cbm', e.target.value)} placeholder="5000" />
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
+          <button disabled={!form.name || isPending} onClick={() => mutate()}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+            {isPending ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function WarehousesPage() {
   const qc = useQueryClient()
   const [activeFilter, setActiveFilter] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [editingWarehouse, setEditingWarehouse] = useState<WarehouseType | null>(null)
   const [form, setForm] = useState({
     name: '', code: '', district_id: '', address: '', capacity_cbm: '',
   })
@@ -62,6 +134,13 @@ export default function WarehousesPage() {
 
   return (
     <div className="space-y-5">
+      {editingWarehouse && (
+        <EditWarehouseModal
+          warehouse={editingWarehouse}
+          districts={districts ?? []}
+          onClose={() => setEditingWarehouse(null)}
+        />
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Warehouses</h1>
@@ -215,12 +294,16 @@ export default function WarehousesPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => toggleActive({ id: w.id, active: !w.is_active })}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        {w.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
+                      <div className="flex gap-3 text-xs font-medium">
+                        <button onClick={() => setEditingWarehouse(w)}
+                          className="text-blue-600 hover:text-blue-800">Edit</button>
+                        <button
+                          onClick={() => toggleActive({ id: w.id, active: !w.is_active })}
+                          className={w.is_active ? 'text-red-600 hover:text-red-800' : 'text-emerald-600 hover:text-emerald-800'}
+                        >
+                          {w.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

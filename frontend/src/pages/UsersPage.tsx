@@ -103,6 +103,75 @@ function InviteModal({ roles, districts, onClose }: { roles: Role[]; districts: 
   )
 }
 
+function EditUserModal({ user, districts, onClose }: { user: User; districts: District[]; onClose: () => void }) {
+  const qc = useQueryClient()
+  const [form, setForm] = useState({
+    name: user.name ?? '',
+    phone: (user as any).phone ?? '',
+    job_title: (user as any).job_title ?? '',
+    district_id: String(user.district_id ?? ''),
+  })
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => api.put(`/users/${user.id}`, {
+      name: form.name,
+      phone: form.phone || undefined,
+      job_title: form.job_title || undefined,
+      district_id: form.district_id ? Number(form.district_id) : undefined,
+    }),
+    onSuccess: () => {
+      toast.success('User updated')
+      qc.invalidateQueries({ queryKey: ['users'] })
+      onClose()
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message ?? 'Update failed'),
+  })
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="font-semibold text-gray-800">Edit User</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Full Name *</label>
+            <input className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.name} onChange={(e) => set('name', e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+            <input className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+263-77-..." />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Job Title</label>
+            <input className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.job_title} onChange={(e) => set('job_title', e.target.value)} placeholder="Field Officer" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">District</label>
+            <select className="w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              value={form.district_id} onChange={(e) => set('district_id', e.target.value)}>
+              <option value="">Select district…</option>
+              {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
+          <button disabled={!form.name || isPending} onClick={() => mutate()}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+            {isPending ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AssignRoleModal({ userId, roles, onClose }: { userId: number; roles: Role[]; onClose: () => void }) {
   const qc = useQueryClient()
   const [selectedRole, setSelectedRole] = useState('')
@@ -149,6 +218,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(1)
   const [showInvite, setShowInvite] = useState(false)
   const [assigningUserId, setAssigningUserId] = useState<number | null>(null)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
   const { data, isLoading } = useQuery<PaginatedResponse<User>>({
     queryKey: ['users', search, page],
@@ -184,6 +254,9 @@ export default function UsersPage() {
       {showInvite && <InviteModal roles={roles} districts={districts} onClose={() => setShowInvite(false)} />}
       {assigningUserId !== null && (
         <AssignRoleModal userId={assigningUserId} roles={roles} onClose={() => setAssigningUserId(null)} />
+      )}
+      {editingUser && (
+        <EditUserModal user={editingUser} districts={districts} onClose={() => setEditingUser(null)} />
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -254,7 +327,8 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3 text-xs font-medium">
-                        <button onClick={() => setAssigningUserId(u.id)} className="text-blue-600 hover:text-blue-800">Role</button>
+                        <button onClick={() => setEditingUser(u)} className="text-blue-600 hover:text-blue-800">Edit</button>
+                        <button onClick={() => setAssigningUserId(u.id)} className="text-indigo-600 hover:text-indigo-800">Role</button>
                         {u.is_active
                           ? <button onClick={() => deactivate(u.id)} className="text-red-600 hover:text-red-800">Deactivate</button>
                           : <button onClick={() => activate(u.id)} className="text-emerald-600 hover:text-emerald-800">Activate</button>
