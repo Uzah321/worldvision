@@ -1,0 +1,26 @@
+# Backend (Laravel)
+backend/.env
+backend/vendor/
+backend/storage/logs/*.log
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+backend/bootstrap/cache/
+backend/database/database.sqlite
+
+# Frontend (Vite / Node)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Smoke test / dev artifacts
+smoke-test.mjs
+frontend/smoke-test.mjs
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
