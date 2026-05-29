@@ -19,8 +19,8 @@ return new class extends Migration
             $table->date('distribution_date');
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
-            $table->enum('status', ['draft', 'approved', 'in_progress', 'completed', 'cancelled'])->default('draft');
-            $table->enum('mode', ['standard', 'emergency'])->default('standard');
+            $table->enum('status', ['planned', 'approved', 'in_progress', 'completed', 'cancelled'])->default('planned');
+            $table->enum('mode', ['in_kind', 'cash', 'voucher'])->default('in_kind');
             $table->integer('planned_beneficiaries')->default(0);
             $table->integer('actual_beneficiaries')->default(0);
             $table->integer('planned_households')->default(0);

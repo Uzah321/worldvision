@@ -127,9 +127,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── Distributions ─────────────────────────────────────────────────────────
-    Route::get('/distributions',                       [DistributionController::class, 'index']);
-    Route::get('/distributions/{distribution}',        [DistributionController::class, 'show']);
-    Route::get('/distributions/{distribution}/records',[DistributionController::class, 'records']);
+    Route::middleware('role:super_admin|programme_manager|distribution_officer|field_officer|auditor')->group(function () {
+        Route::get('/distributions',                       [DistributionController::class, 'index']);
+        Route::get('/distributions/{distribution}',        [DistributionController::class, 'show']);
+        Route::get('/distributions/{distribution}/records',[DistributionController::class, 'records']);
+    });
 
     // Create/edit: distribution_officer and above
     Route::middleware('role:super_admin|programme_manager|distribution_officer')->group(function () {
@@ -151,8 +153,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ── Procurement ───────────────────────────────────────────────────────────
-    Route::get('/procurement',                         [ProcurementController::class, 'index']);
-    Route::get('/procurement/{procurement}',           [ProcurementController::class, 'show']);
+    Route::middleware('role:super_admin|programme_manager|procurement_officer|warehouse_officer|auditor')->group(function () {
+        Route::get('/procurement',                     [ProcurementController::class, 'index']);
+        Route::get('/procurement/{procurement}',       [ProcurementController::class, 'show']);
+    });
 
     // Create/edit: procurement_officer
     Route::middleware('role:super_admin|procurement_officer')->group(function () {

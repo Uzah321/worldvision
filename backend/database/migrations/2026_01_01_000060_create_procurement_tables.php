@@ -37,8 +37,8 @@ return new class extends Migration
             $table->string('currency', 10)->default('USD');
             $table->date('required_date')->nullable();
             $table->date('delivery_date')->nullable();
-            $table->enum('status', ['draft', 'submitted', 'under_review', 'approved', 'ordered', 'partially_received', 'received', 'cancelled'])->default('draft');
-            $table->enum('priority', ['low', 'normal', 'high', 'emergency'])->default('normal');
+            $table->enum('status', ['draft', 'submitted', 'approved', 'rejected', 'partially_received', 'received', 'cancelled'])->default('draft');
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
