@@ -16,7 +16,7 @@ function EditWarehouseModal({ warehouse, districts, onClose }: {
     name: warehouse.name ?? '',
     address: (warehouse as any).address ?? '',
     capacity_cbm: (warehouse as any).capacity_cbm ?? '',
-    district_id: String(warehouse.district_id ?? ''),
+    district_id: String(warehouse.district?.id ?? ''),
   })
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
 

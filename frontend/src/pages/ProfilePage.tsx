@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore'
 import { formatDateTime } from '../lib/utils'
 
 export default function ProfilePage() {
-  const { user: storeUser, setUser } = useAuthStore()
+  const { user: storeUser } = useAuthStore()
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['me'],

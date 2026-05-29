@@ -109,7 +109,7 @@ function EditUserModal({ user, districts, onClose }: { user: User; districts: Di
     name: user.name ?? '',
     phone: (user as any).phone ?? '',
     job_title: (user as any).job_title ?? '',
-    district_id: String(user.district_id ?? ''),
+    district_id: String(user.district?.id ?? ''),
   })
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
 

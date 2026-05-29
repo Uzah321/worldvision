@@ -112,7 +112,7 @@ export interface ProcurementOrder {
   id: number
   po_number: string
   title: string
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'received'
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'partially_received' | 'received'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   total_amount: number
   currency: string

@@ -4,7 +4,7 @@ import { Plus, Home, Search, X, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Household, PaginatedResponse } from '../types'
-import { formatDate, cn, exportToCsv } from '../lib/utils'
+import { cn, exportToCsv } from '../lib/utils'
 
 interface District { id: number; name: string }
 interface Ward { id: number; name: string; district_id: number }

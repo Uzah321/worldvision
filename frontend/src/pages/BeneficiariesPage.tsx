@@ -253,9 +253,9 @@ export default function BeneficiariesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1">
-                        {b.is_malnourished && <AlertCircle size={14} className="text-red-500" title="Malnourished" />}
-                        {b.is_disabled    && <AlertCircle size={14} className="text-amber-500" title="Disabled" />}
-                        {b.is_pregnant    && <AlertCircle size={14} className="text-pink-500" title="Pregnant" />}
+                        {b.is_malnourished && <AlertCircle size={14} className="text-red-500" aria-label="Malnourished" />}
+                        {b.is_disabled    && <AlertCircle size={14} className="text-amber-500" aria-label="Disabled" />}
+                        {b.is_pregnant    && <AlertCircle size={14} className="text-pink-500" aria-label="Pregnant" />}
                       </div>
                     </td>
                   </tr>
