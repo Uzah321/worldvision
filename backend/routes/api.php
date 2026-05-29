@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Lookup endpoints for form dropdowns
     Route::get('/commodities', function () {
-        return response()->json(\App\Models\Commodity::orderBy('name')->get(['id', 'name', 'unit']));
+        return response()->json(\App\Models\Commodity::orderBy('name')->selectRaw('id, name, unit_of_measure as unit')->get());
     });
 
     Route::get('/households', function (Request $request) {
