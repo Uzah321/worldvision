@@ -158,11 +158,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/procurement/{procurement}',       [ProcurementController::class, 'show']);
     });
 
-    // Create/edit: procurement_officer
+    // Create/edit/submit: procurement_officer
     Route::middleware('role:super_admin|procurement_officer')->group(function () {
-        Route::post('/procurement',                    [ProcurementController::class, 'store']);
-        Route::put('/procurement/{procurement}',       [ProcurementController::class, 'update']);
-        Route::delete('/procurement/{procurement}',    [ProcurementController::class, 'destroy']);
+        Route::post('/procurement',                           [ProcurementController::class, 'store']);
+        Route::put('/procurement/{procurement}',              [ProcurementController::class, 'update']);
+        Route::delete('/procurement/{procurement}',           [ProcurementController::class, 'destroy']);
+        Route::post('/procurement/{procurement}/submit',      [ProcurementController::class, 'submit']);
     });
 
     // Approve/reject: programme_manager

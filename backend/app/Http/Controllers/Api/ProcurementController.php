@@ -111,6 +111,18 @@ class ProcurementController extends Controller
         return response()->json(['message' => 'Procurement order deleted.']);
     }
 
+    public function submit(Request $request, ProcurementOrder $procurement): JsonResponse
+    {
+        if ($procurement->status !== 'draft') {
+            return response()->json(['message' => 'Only draft orders can be submitted.'], 422);
+        }
+
+        $procurement->update(['status' => 'submitted']);
+        $this->audit->log('procurement_order_submitted', 'ProcurementOrder', $procurement->id, null, $request);
+
+        return response()->json($procurement->fresh());
+    }
+
     public function approve(Request $request, ProcurementOrder $procurement): JsonResponse
     {
         if ($procurement->status !== 'submitted') {

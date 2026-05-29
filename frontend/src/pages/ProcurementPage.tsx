@@ -421,6 +421,12 @@ export default function ProcurementPage() {
     placeholderData: (prev) => prev,
   })
 
+  const { mutate: submit } = useMutation({
+    mutationFn: (id: number) => api.post(`/procurement/${id}/submit`),
+    onSuccess: () => { toast.success('Order submitted for approval'); qc.invalidateQueries({ queryKey: ['procurement'] }) },
+    onError: (err: any) => toast.error(err.response?.data?.message ?? 'Submit failed'),
+  })
+
   const { mutate: approve } = useMutation({
     mutationFn: (id: number) => api.post(`/procurement/${id}/approve`),
     onSuccess: () => { toast.success('Order approved'); qc.invalidateQueries({ queryKey: ['procurement'] }) },
@@ -499,6 +505,11 @@ export default function ProcurementPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 text-xs font-medium">
+                        {po.status === 'draft' && canCreate && (
+                          <button onClick={() => submit(po.id)} className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            Submit
+                          </button>
+                        )}
                         {po.status === 'submitted' && canApprove && (
                           <>
                             <button onClick={() => approve(po.id)} className="text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
