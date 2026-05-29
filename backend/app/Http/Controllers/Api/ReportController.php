@@ -49,14 +49,15 @@ class ReportController extends Controller
 
     public function distributions(Request $request): JsonResponse
     {
-        $from = $request->from ?? now()->startOfMonth()->toDateString();
-        $to   = $request->to ?? now()->endOfMonth()->toDateString();
+        // Default: last 6 months so historical data is visible
+        $from = $request->from ?? now()->subMonths(6)->toDateString();
+        $to   = $request->to   ?? now()->addMonths(3)->toDateString();
 
         $distributions = Distribution::with(['project', 'programme', 'site'])
             ->whereBetween('distribution_date', [$from, $to])
             ->when($request->programme_id, fn($q, $p) => $q->where('programme_id', $p))
-            ->when($request->project_id, fn($q, $p) => $q->where('project_id', $p))
-            ->orderBy('distribution_date')
+            ->when($request->project_id,   fn($q, $p) => $q->where('project_id', $p))
+            ->orderByDesc('distribution_date')
             ->get();
 
         $summary = [
@@ -73,58 +74,31 @@ class ReportController extends Controller
 
     public function beneficiaries(Request $request): JsonResponse
     {
-        $byGender = Beneficiary::select('gender', DB::raw('count(*) as total'))
-            ->groupBy('gender')->get();
+        $query = Beneficiary::with(['household.district'])
+            ->when($request->status, fn($q, $s) => $q->where('status', $s))
+            ->when($request->district_id, fn($q, $d) =>
+                $q->whereHas('household', fn($h) => $h->where('district_id', $d)))
+            ->orderBy('beneficiary_number');
 
-        $byStatus = Beneficiary::select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')->get();
-
-        $byDistrict = Beneficiary::join('households', 'beneficiaries.household_id', '=', 'households.id')
-            ->join('districts', 'households.district_id', '=', 'districts.id')
-            ->select('districts.name as district', DB::raw('count(*) as total'))
-            ->groupBy('districts.name')
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
-
-        $vulnerability = [
-            'disabled'    => Beneficiary::where('is_disabled', true)->count(),
-            'pregnant'    => Beneficiary::where('is_pregnant', true)->count(),
-            'lactating'   => Beneficiary::where('is_lactating', true)->count(),
-            'malnourished'=> Beneficiary::where('is_malnourished', true)->count(),
-        ];
-
-        return response()->json(compact('byGender', 'byStatus', 'byDistrict', 'vulnerability'));
+        return response()->json($query->paginate(100));
     }
 
     public function inventory(Request $request): JsonResponse
     {
-        $stockByWarehouse = Inventory::join('warehouses', 'inventory.warehouse_id', '=', 'warehouses.id')
-            ->join('commodities', 'inventory.commodity_id', '=', 'commodities.id')
-            ->select(
-                'warehouses.name as warehouse',
-                'commodities.name as commodity',
-                DB::raw('SUM(quantity_available) as available'),
-                DB::raw('SUM(quantity_distributed) as distributed'),
-                DB::raw('SUM(quantity_damaged) as damaged')
-            )
-            ->groupBy('warehouses.name', 'commodities.name')
-            ->orderBy('warehouses.name')
-            ->get();
+        $query = Inventory::with(['warehouse', 'commodity'])
+            ->when($request->warehouse_id, fn($q, $w) => $q->where('warehouse_id', $w))
+            ->orderBy('warehouse_id')
+            ->orderBy('commodity_id');
 
-        return response()->json($stockByWarehouse);
+        return response()->json($query->paginate(100));
     }
 
     public function kpis(Request $request): JsonResponse
     {
-        $query = KpiTarget::with('project')
+        $query = KpiTarget::with(['project.programme'])
             ->when($request->project_id, fn($q, $p) => $q->where('project_id', $p));
 
-        $kpis = $query->get()->map(fn($k) => array_merge($k->toArray(), [
-            'progress_percentage' => $k->progress_percentage,
-        ]));
-
-        return response()->json($kpis);
+        return response()->json($query->orderBy('project_id')->get());
     }
 
     public function auditLog(Request $request): JsonResponse
