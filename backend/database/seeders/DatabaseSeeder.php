@@ -57,6 +57,24 @@ class DatabaseSeeder extends Seeder
         ]);
         $po->syncRoles(['procurement_officer']);
 
+        $do = User::firstOrCreate(['email' => 'data@worldvision.org'], [
+            'name' => 'Rudo Chikwanda', 'password' => Hash::make('Demo@1234!'),
+            'employee_id' => 'WV-DA-001', 'job_title' => 'Data Officer', 'is_active' => true,
+        ]);
+        $do->syncRoles(['data_officer']);
+
+        $fo = User::firstOrCreate(['email' => 'field@worldvision.org'], [
+            'name' => 'Moses Phiri', 'password' => Hash::make('Demo@1234!'),
+            'employee_id' => 'WV-FO-001', 'job_title' => 'Field Officer', 'is_active' => true,
+        ]);
+        $fo->syncRoles(['field_officer']);
+
+        $au = User::firstOrCreate(['email' => 'auditor@worldvision.org'], [
+            'name' => 'Grace Sibanda', 'password' => Hash::make('Demo@1234!'),
+            'employee_id' => 'WV-AU-001', 'job_title' => 'Internal Auditor', 'is_active' => true,
+        ]);
+        $au->syncRoles(['auditor']);
+
         // ── Geography ──────────────────────────────────────────────────────────
         $zimbabwe = DB::table('countries')->insertGetId([
             'name' => 'Zimbabwe', 'code' => 'ZWE', 'currency' => 'USD', 'is_active' => true,
