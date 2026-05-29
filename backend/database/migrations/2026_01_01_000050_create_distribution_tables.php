@@ -42,7 +42,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('distribution_id')->constrained()->cascadeOnDelete();
             $table->foreignId('commodity_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('inventory_id')->constrained('inventory')->cascadeOnDelete();
+            $table->foreignId('inventory_id')->nullable()->constrained('inventory')->nullOnDelete();
             $table->decimal('planned_quantity', 18, 4)->default(0);
             $table->decimal('actual_quantity', 18, 4)->default(0);
             $table->decimal('unit_ration', 10, 4)->default(0);

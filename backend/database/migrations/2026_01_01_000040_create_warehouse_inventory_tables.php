@@ -77,7 +77,7 @@ return new class extends Migration
             $table->foreignId('inventory_id')->constrained('inventory')->cascadeOnDelete();
             $table->foreignId('warehouse_id')->constrained()->cascadeOnDelete();
             $table->foreignId('commodity_id')->constrained()->cascadeOnDelete();
-            $table->enum('movement_type', ['receipt', 'dispatch', 'transfer_in', 'transfer_out', 'adjustment', 'loss', 'damage', 'return']);
+            $table->enum('movement_type', ['receipt', 'dispatch', 'transfer_in', 'transfer_out', 'adjustment', 'loss', 'damage', 'return', 'correction', 'expiry']);
             $table->decimal('quantity', 18, 4);
             $table->decimal('balance_after', 18, 4);
             $table->string('reference_number')->nullable();
