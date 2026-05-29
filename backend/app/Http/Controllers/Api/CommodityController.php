@@ -25,8 +25,9 @@ class CommodityController extends Controller
     {
         $data = $request->validate([
             'name'        => 'required|string|max:100|unique:commodity_categories',
+            'code'        => 'required|string|max:50|unique:commodity_categories,code',
             'description' => 'nullable|string',
-            'type'        => 'required|in:food,non_food,medical,other',
+            'type'        => 'required|in:food,non_food,medical,shelter,wash,other',
         ]);
 
         $category = CommodityCategory::create($data);

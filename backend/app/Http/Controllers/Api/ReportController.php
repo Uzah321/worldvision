@@ -99,8 +99,8 @@ class ReportController extends Controller
 
     public function inventory(Request $request): JsonResponse
     {
-        $stockByWarehouse = Inventory::join('warehouses', 'inventories.warehouse_id', '=', 'warehouses.id')
-            ->join('commodities', 'inventories.commodity_id', '=', 'commodities.id')
+        $stockByWarehouse = Inventory::join('warehouses', 'inventory.warehouse_id', '=', 'warehouses.id')
+            ->join('commodities', 'inventory.commodity_id', '=', 'commodities.id')
             ->select(
                 'warehouses.name as warehouse',
                 'commodities.name as commodity',
