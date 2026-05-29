@@ -87,9 +87,9 @@ const REPORT_CONFIGS: Record<Tab, { endpoint: string; columns: any[] }> = {
     endpoint: '/reports/beneficiaries',
     columns: [
       { key: 'beneficiary_number',          label: 'Number' },
-      { key: 'full_name',                   label: 'Name' },
+      { key: 'first_name',                  label: 'First Name' },
+      { key: 'last_name',                   label: 'Last Name' },
       { key: 'gender',                      label: 'Gender' },
-      { key: 'age',                         label: 'Age',       right: true },
       { key: 'status',                      label: 'Status' },
       { key: 'household.household_number',  label: 'Household' },
       { key: 'household.district.name',     label: 'District' },
