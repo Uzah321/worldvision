@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { CommodityCategory, CommodityFull, DistributionSite, PaginatedResponse } from '../types'
 import { cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 interface District { id: number; name: string }
 interface Ward { id: number; name: string; district_id: number }
@@ -256,6 +257,7 @@ export default function CatalogPage() {
   const qc = useQueryClient()
   const [tab, setTab] = useState<Tab>('commodities')
   const [modal, setModal] = useState<{ type: Tab; item?: any } | null>(null)
+  const canWrite = useHasRole('super_admin', 'data_officer')
 
   const { data: categories = [] } = useQuery<CommodityCategory[]>({
     queryKey: ['commodity-categories'],
@@ -330,11 +332,13 @@ export default function CatalogPage() {
           <h1 className="text-2xl font-bold text-gray-900">Catalog</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage commodities, categories and distribution sites</p>
         </div>
-        <button onClick={() => setModal({ type: tab })}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
-          <Plus size={16} />
-          {tab === 'commodities' ? 'New Commodity' : tab === 'categories' ? 'New Category' : 'New Site'}
-        </button>
+        {canWrite && (
+          <button onClick={() => setModal({ type: tab })}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+            <Plus size={16} />
+            {tab === 'commodities' ? 'New Commodity' : tab === 'categories' ? 'New Category' : 'New Site'}
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -380,10 +384,12 @@ export default function CatalogPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-3 text-xs font-medium">
-                        <button onClick={() => setModal({ type: 'commodities', item: c })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
-                        <button onClick={() => { if (confirm('Delete commodity?')) deleteCom(c.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
-                      </div>
+                      {canWrite && (
+                        <div className="flex gap-3 text-xs font-medium">
+                          <button onClick={() => setModal({ type: 'commodities', item: c })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
+                          <button onClick={() => { if (confirm('Delete commodity?')) deleteCom(c.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -416,10 +422,12 @@ export default function CatalogPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{cat.description ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-3 text-xs font-medium">
-                      <button onClick={() => setModal({ type: 'categories', item: cat })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
-                      <button onClick={() => { if (confirm('Delete category?')) deleteCat(cat.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
-                    </div>
+                    {canWrite && (
+                      <div className="flex gap-3 text-xs font-medium">
+                        <button onClick={() => setModal({ type: 'categories', item: cat })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
+                        <button onClick={() => { if (confirm('Delete category?')) deleteCat(cat.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -459,10 +467,12 @@ export default function CatalogPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-3 text-xs font-medium">
-                        <button onClick={() => setModal({ type: 'sites', item: s })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
-                        <button onClick={() => { if (confirm('Delete site?')) deleteSite(s.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
-                      </div>
+                      {canWrite && (
+                        <div className="flex gap-3 text-xs font-medium">
+                          <button onClick={() => setModal({ type: 'sites', item: s })} className="text-blue-600 hover:text-blue-800 flex items-center gap-1"><Pencil size={12} /> Edit</button>
+                          <button onClick={() => { if (confirm('Delete site?')) deleteSite(s.id) }} className="text-red-500 hover:text-red-700 flex items-center gap-1"><Trash2 size={12} /> Delete</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

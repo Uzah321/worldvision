@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Household, PaginatedResponse } from '../types'
 import { cn, exportToCsv } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 interface District { id: number; name: string }
 interface Ward { id: number; name: string; district_id: number }
@@ -208,6 +209,7 @@ export default function HouseholdsPage() {
   const [districtFilter, setDistrictFilter] = useState('')
   const [page, setPage] = useState(1)
   const [modal, setModal] = useState<Household | null | 'new'>(null)
+  const canWrite = useHasRole('super_admin', 'data_officer', 'field_officer')
 
   const { data, isLoading } = useQuery<PaginatedResponse<Household>>({
     queryKey: ['households', search, districtFilter, page],
@@ -266,10 +268,10 @@ export default function HouseholdsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
             <Download size={15} /> Export CSV
           </button>
-          <button onClick={() => setModal('new')}
+          {canWrite && <button onClick={() => setModal('new')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
             <Plus size={16} /> Register Household
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -336,9 +338,9 @@ export default function HouseholdsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3 text-xs font-medium">
-                        <button onClick={() => setModal(hh)} className="text-blue-600 hover:text-blue-800">Edit</button>
-                        <button onClick={() => { if (confirm('Delete this household?')) deleteHh(hh.id) }}
-                          className="text-red-500 hover:text-red-700">Delete</button>
+                        {canWrite && <button onClick={() => setModal(hh)} className="text-blue-600 hover:text-blue-800">Edit</button>}
+                        {canWrite && <button onClick={() => { if (confirm('Delete this household?')) deleteHh(hh.id) }}
+                          className="text-red-500 hover:text-red-700">Delete</button>}
                       </div>
                     </td>
                   </tr>

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Beneficiary, PaginatedResponse } from '../types'
 import { cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 const STATUS_COLORS: Record<string, string> = {
   active:      'bg-emerald-100 text-emerald-700',
@@ -165,6 +166,7 @@ export default function BeneficiariesPage() {
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [showRegister, setShowRegister] = useState(false)
+  const canWrite = useHasRole('super_admin', 'data_officer', 'field_officer')
 
   const { data, isLoading } = useQuery<PaginatedResponse<Beneficiary>>({
     queryKey: ['beneficiaries', search, status, page],
@@ -185,10 +187,12 @@ export default function BeneficiariesPage() {
             {data ? `${data.total.toLocaleString()} total records` : 'Loading…'}
           </p>
         </div>
-        <button onClick={() => setShowRegister(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
-          <Plus size={16} /> Register Beneficiary
-        </button>
+        {canWrite && (
+          <button onClick={() => setShowRegister(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+            <Plus size={16} /> Register Beneficiary
+          </button>
+        )}
       </div>
 
       <div className="bg-white border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">

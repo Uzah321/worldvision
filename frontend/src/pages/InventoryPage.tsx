@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Inventory, InventoryMovement, PaginatedResponse } from '../types'
 import { formatDate, formatDateTime, cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 // ── Adjust Modal ─────────────────────────────────────────────────────────────
 function AdjustModal({ inventory, onClose }: { inventory: Inventory; onClose: () => void }) {
@@ -147,6 +148,7 @@ export default function InventoryPage() {
   const [page, setPage] = useState(1)
   const [adjusting, setAdjusting] = useState<Inventory | null>(null)
   const [viewingMovements, setViewingMovements] = useState<Inventory | null>(null)
+  const canAdjust = useHasRole('super_admin', 'warehouse_officer')
 
   const { data, isLoading } = useQuery<PaginatedResponse<Inventory>>({
     queryKey: ['inventory', warehouseId, page],
@@ -271,10 +273,12 @@ export default function InventoryPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-3 text-xs font-medium">
-                          <button onClick={() => setAdjusting(inv)}
-                            className="text-amber-600 hover:text-amber-800 flex items-center gap-1">
-                            <SlidersHorizontal size={12} /> Adjust
-                          </button>
+                          {canAdjust && (
+                            <button onClick={() => setAdjusting(inv)}
+                              className="text-amber-600 hover:text-amber-800 flex items-center gap-1">
+                              <SlidersHorizontal size={12} /> Adjust
+                            </button>
+                          )}
                           <button onClick={() => setViewingMovements(inv)}
                             className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                             <History size={12} /> History

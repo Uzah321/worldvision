@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Warehouse as WarehouseType } from '../types'
 import { cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 interface District { id: number; name: string }
 
@@ -84,6 +85,7 @@ export default function WarehousesPage() {
   const [activeFilter, setActiveFilter] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingWarehouse, setEditingWarehouse] = useState<WarehouseType | null>(null)
+  const canWrite = useHasRole('super_admin', 'warehouse_officer')
   const [form, setForm] = useState({
     name: '', code: '', district_id: '', address: '', capacity_cbm: '',
   })
@@ -148,12 +150,14 @@ export default function WarehousesPage() {
             {data ? `${data.length} locations` : 'Loading…'}
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors"
-        >
-          <Plus size={16} /> Add Warehouse
-        </button>
+        {canWrite && (
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors"
+          >
+            <Plus size={16} /> Add Warehouse
+          </button>
+        )}
       </div>
 
       {/* Add form */}
@@ -295,14 +299,14 @@ export default function WarehousesPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3 text-xs font-medium">
-                        <button onClick={() => setEditingWarehouse(w)}
-                          className="text-blue-600 hover:text-blue-800">Edit</button>
-                        <button
+                        {canWrite && <button onClick={() => setEditingWarehouse(w)}
+                          className="text-blue-600 hover:text-blue-800">Edit</button>}
+                        {canWrite && <button
                           onClick={() => toggleActive({ id: w.id, active: !w.is_active })}
                           className={w.is_active ? 'text-red-600 hover:text-red-800' : 'text-emerald-600 hover:text-emerald-800'}
                         >
                           {w.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                        </button>}
                       </div>
                     </td>
                   </tr>

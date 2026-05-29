@@ -28,3 +28,19 @@ export const useAuthStore = create<AuthState>()(
     { name: 'wv-auth', partialize: (s) => ({ token: s.token, user: s.user }) }
   )
 )
+
+/** Returns true if the current user has ANY of the supplied roles. Pass no args to match all authenticated users. */
+export function useHasRole(...roles: string[]): boolean {
+  return useAuthStore((s) => {
+    if (!roles.length) return !!s.token
+    const userRoles = s.user?.roles?.map((r) => r.name) ?? []
+    return roles.some((r) => userRoles.includes(r))
+  })
+}
+
+/** Non-hook version for use outside React components (e.g. in route guards). */
+export function hasRole(user: User | null, ...roles: string[]): boolean {
+  if (!roles.length) return true
+  const userRoles = user?.roles?.map((r) => r.name) ?? []
+  return roles.some((r) => userRoles.includes(r))
+}

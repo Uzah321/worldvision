@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Distribution, DistributionRecord, PaginatedResponse, Programme } from '../types'
 import { formatDate, formatDateTime, cn, exportToCsv } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 const STATUS_COLORS: Record<string, string> = {
   planned:     'bg-blue-100 text-blue-700',
@@ -396,6 +397,9 @@ export default function DistributionsPage() {
   const [page, setPage] = useState(1)
   const [showNew, setShowNew] = useState(false)
   const [recording, setRecording] = useState<Distribution | null>(null)
+  const canCreate   = useHasRole('super_admin', 'programme_manager', 'distribution_officer')
+  const canApprove  = useHasRole('super_admin', 'programme_manager')
+  const canOperate  = useHasRole('super_admin', 'distribution_officer', 'field_officer')
 
   const { data, isLoading } = useQuery<PaginatedResponse<Distribution>>({
     queryKey: ['distributions', status, page],
@@ -452,10 +456,12 @@ export default function DistributionsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors">
             <Download size={15} /> Export CSV
           </button>
-          <button onClick={() => setShowNew(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
-            <Plus size={16} /> New Distribution
-          </button>
+          {canCreate && (
+            <button onClick={() => setShowNew(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+              <Plus size={16} /> New Distribution
+            </button>
+          )}
         </div>
       </div>
 
@@ -515,13 +521,13 @@ export default function DistributionsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 text-xs font-medium">
-                        {d.status === 'planned' && (
+                        {d.status === 'planned' && canApprove && (
                           <button onClick={() => approve(d.id)} className="text-cyan-600 hover:text-cyan-800">Approve</button>
                         )}
-                        {d.status === 'approved' && (
+                        {d.status === 'approved' && canOperate && (
                           <button onClick={() => start(d.id)} className="text-amber-600 hover:text-amber-800">Start</button>
                         )}
-                        {d.status === 'in_progress' && (
+                        {d.status === 'in_progress' && canOperate && (
                           <>
                             <button onClick={() => setRecording(d)} className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                               <ClipboardCheck size={12} /> Record

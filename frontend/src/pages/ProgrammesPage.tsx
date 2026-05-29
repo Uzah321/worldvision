@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { Programme, PaginatedResponse } from '../types'
 import { formatDate, formatCurrency, cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 const STATUS_COLORS: Record<string, string> = {
   active:    'bg-emerald-100 text-emerald-700',
@@ -160,6 +161,7 @@ export default function ProgrammesPage() {
   const [page, setPage] = useState(1)
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [showNew, setShowNew] = useState(false)
+  const canWrite = useHasRole('super_admin', 'programme_manager')
 
   const { data, isLoading } = useQuery<PaginatedResponse<Programme>>({
     queryKey: ['programmes', statusFilter, page],
@@ -180,10 +182,12 @@ export default function ProgrammesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Programmes</h1>
           <p className="text-sm text-gray-500 mt-0.5">{data ? `${data.total.toLocaleString()} programmes` : 'Loading…'}</p>
         </div>
-        <button onClick={() => setShowNew(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
-          <Plus size={16} /> New Programme
-        </button>
+        {canWrite && (
+          <button onClick={() => setShowNew(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+            <Plus size={16} /> New Programme
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">

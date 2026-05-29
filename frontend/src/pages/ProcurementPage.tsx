@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import api from '../lib/api'
 import type { ProcurementOrder, PaginatedResponse, Programme } from '../types'
 import { formatDate, formatCurrency, cn } from '../lib/utils'
+import { useHasRole } from '../store/authStore'
 
 const STATUS_COLORS: Record<string, string> = {
   draft:               'bg-gray-100 text-gray-600',
@@ -409,6 +410,9 @@ export default function ProcurementPage() {
   const [showNew, setShowNew] = useState(false)
   const [rejectId, setRejectId] = useState<number | null>(null)
   const [receiveId, setReceiveId] = useState<number | null>(null)
+  const canCreate  = useHasRole('super_admin', 'procurement_officer')
+  const canApprove = useHasRole('super_admin', 'programme_manager')
+  const canReceive = useHasRole('super_admin', 'warehouse_officer', 'procurement_officer')
 
   const { data, isLoading } = useQuery<PaginatedResponse<ProcurementOrder>>({
     queryKey: ['procurement', status, page],
@@ -434,10 +438,12 @@ export default function ProcurementPage() {
           <h1 className="text-2xl font-bold text-gray-900">Procurement</h1>
           <p className="text-sm text-gray-500 mt-0.5">{data ? `${data.total.toLocaleString()} purchase orders` : 'Loading…'}</p>
         </div>
-        <button onClick={() => setShowNew(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
-          <Plus size={16} /> New Order
-        </button>
+        {canCreate && (
+          <button onClick={() => setShowNew(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium transition-colors">
+            <Plus size={16} /> New Order
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -493,7 +499,7 @@ export default function ProcurementPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 text-xs font-medium">
-                        {po.status === 'submitted' && (
+                        {po.status === 'submitted' && canApprove && (
                           <>
                             <button onClick={() => approve(po.id)} className="text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
                               <CheckCircle size={12} /> Approve
@@ -503,7 +509,7 @@ export default function ProcurementPage() {
                             </button>
                           </>
                         )}
-                        {(po.status === 'approved' || po.status === 'partially_received') && (
+                        {(po.status === 'approved' || po.status === 'partially_received') && canReceive && (
                           <button onClick={() => setReceiveId(po.id)} className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
                             <Package size={12} /> {po.status === 'partially_received' ? 'Receive More' : 'Receive'}
                           </button>

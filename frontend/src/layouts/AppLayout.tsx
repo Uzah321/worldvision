@@ -8,22 +8,22 @@ import {
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import api from '../lib/api'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore, useHasRole } from '../store/authStore'
 import { cn } from '../lib/utils'
 import type { Inventory } from '../types'
 
 const NAV = [
-  { to: '/',                icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/households',      icon: Home,            label: 'Households' },
-  { to: '/beneficiaries',   icon: Users,           label: 'Beneficiaries' },
-  { to: '/distributions',   icon: Truck,           label: 'Distributions' },
-  { to: '/inventory',       icon: Package,         label: 'Inventory' },
-  { to: '/warehouses',      icon: Warehouse,       label: 'Warehouses' },
-  { to: '/procurement',     icon: ShoppingCart,    label: 'Procurement' },
-  { to: '/programmes',      icon: BarChart3,       label: 'Programmes' },
-  { to: '/catalog',         icon: Tag,             label: 'Catalog' },
-  { to: '/reports',         icon: FileBarChart,    label: 'Reports' },
-  { to: '/users',           icon: Users,           label: 'Users' },
+  { to: '/',              icon: LayoutDashboard, label: 'Dashboard',     roles: null },
+  { to: '/households',    icon: Home,            label: 'Households',    roles: ['super_admin','programme_manager','distribution_officer','data_officer','field_officer','auditor'] },
+  { to: '/beneficiaries', icon: Users,           label: 'Beneficiaries', roles: ['super_admin','programme_manager','distribution_officer','data_officer','field_officer','auditor'] },
+  { to: '/distributions', icon: Truck,           label: 'Distributions', roles: ['super_admin','programme_manager','distribution_officer','field_officer','auditor'] },
+  { to: '/inventory',     icon: Package,         label: 'Inventory',     roles: ['super_admin','programme_manager','warehouse_officer','procurement_officer','auditor'] },
+  { to: '/warehouses',    icon: Warehouse,       label: 'Warehouses',    roles: ['super_admin','warehouse_officer','auditor'] },
+  { to: '/procurement',   icon: ShoppingCart,    label: 'Procurement',   roles: ['super_admin','programme_manager','procurement_officer','warehouse_officer','auditor'] },
+  { to: '/programmes',    icon: BarChart3,       label: 'Programmes',    roles: null },
+  { to: '/catalog',       icon: Tag,             label: 'Catalog',       roles: null },
+  { to: '/reports',       icon: FileBarChart,    label: 'Reports',       roles: null },
+  { to: '/users',         icon: Users,           label: 'Users',         roles: ['super_admin'] },
 ]
 
 function AlertsBell() {
@@ -102,6 +102,8 @@ export default function AppLayout() {
   const [open, setOpen] = useState(false)
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const userRoles = user?.roles?.map((r) => r.name) ?? []
+  const visibleNav = NAV.filter((item) => !item.roles || item.roles.some((r) => userRoles.includes(r)))
 
   const { mutate: doLogout } = useMutation({
     mutationFn: () => api.post('/logout'),
@@ -139,7 +141,7 @@ export default function AppLayout() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ to, icon: Icon, label }) => (
+          {visibleNav.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
