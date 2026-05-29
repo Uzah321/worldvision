@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import api from '../lib/api'
-import { useAuthStore, useHasRole } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 import { cn } from '../lib/utils'
 import type { Inventory } from '../types'
 

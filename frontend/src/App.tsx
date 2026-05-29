@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import type { ReactElement } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -23,7 +24,7 @@ const qc = new QueryClient({
 })
 
 /** Redirects to / if the user doesn't have one of the required roles */
-function RoleRoute({ roles, element }: { roles: string[]; element: JSX.Element }) {
+function RoleRoute({ roles, element }: { roles: string[]; element: ReactElement }) {
   const allowed = useHasRole(...roles)
   return allowed ? element : <Navigate to="/" replace />
 }
